@@ -41,7 +41,7 @@ var workList = PAGERIZE_EVENTS
     return stream.merge(Stream.fromEventTarget(document.body, eventType));
   }, new Stream())
   .filter(function(event) {
-    return event.target.classList.contains('display_works');
+    return event.target.classList.contains('image-item');
   })
   .map(function(event) {
     return $$('.image-item', event.target);
@@ -60,7 +60,7 @@ Stream.fromEventTarget(createBtn('古い順'), 'click')
     return workList;
   })
   .subscribe(function(data) {
-    var roots = $$('.display_works>ul');
+    var roots = $$('._image-items');
 
     data.forEach(function add(el, index) {
       roots[~~(index / 20)].appendChild(el);
