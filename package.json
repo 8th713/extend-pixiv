@@ -1,6 +1,6 @@
 {
   "name": "extend-pixiv",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Mini userscript for pixiv.",
   "author": "8th713",
   "licenses": [
@@ -20,7 +20,7 @@
   },
   "scripts": {
     "start": "webpack --colors --debug --output-pathinfo --watch",
-    "build": "webpack --colors "
+    "build": "webpack --colors"
   },
   "devDependencies": {
     "css-loader": "^0.8.0",

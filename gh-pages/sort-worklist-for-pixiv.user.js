@@ -46,7 +46,7 @@
 
 	// ==UserScript==
 	// @name         Sort the work list for pixiv
-	// @version      0.2.0
+	// @version      0.2.1
 	// @description  Makes possible to toggle the asc/desc of work list.
 	// @author       8th713
 	// @namespace    http://8th713.tumblr.com/
@@ -87,7 +87,7 @@
 	    return stream.merge(Stream.fromEventTarget(document.body, eventType));
 	  }, new Stream())
 	  .filter(function(event) {
-	    return event.target.classList.contains('display_works');
+	    return event.target.classList.contains('image-item');
 	  })
 	  .map(function(event) {
 	    return $$('.image-item', event.target);
@@ -106,7 +106,7 @@
 	    return workList;
 	  })
 	  .subscribe(function(data) {
-	    var roots = $$('.display_works>ul');
+	    var roots = $$('._image-items');
 
 	    data.forEach(function add(el, index) {
 	      roots[~~(index / 20)].appendChild(el);

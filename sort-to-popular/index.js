@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Sort to popular order for pixiv
-// @version      0.2.0
+// @version      0.2.1
 // @description  Makes possible to sort the search result to popular order.
 // @author       8th713
 // @namespace    http://8th713.tumblr.com/

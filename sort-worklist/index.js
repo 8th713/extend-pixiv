@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Sort the work list for pixiv
-// @version      0.2.0
+// @version      0.2.1
 // @description  Makes possible to toggle the asc/desc of work list.
 // @author       8th713
 // @namespace    http://8th713.tumblr.com/

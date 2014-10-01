@@ -46,7 +46,7 @@
 
 	// ==UserScript==
 	// @name         Sort to popular order for pixiv
-	// @version      0.2.0
+	// @version      0.2.1
 	// @description  Makes possible to sort the search result to popular order.
 	// @author       8th713
 	// @namespace    http://8th713.tumblr.com/
@@ -63,16 +63,9 @@
 	var Stream = __webpack_require__(3);
 
 	var BKMK_COUNT_CLASS = 'bookmark-count';
-	var SEARCH = {
-	  ROOT_SELECTOR: '._image-items',
-	  ITEM_SELECTOR: '.image-item',
-	  AP_TARGER:     '_image-items'
-	};
-	var BKMK = {
-	  ROOT_SELECTOR: '.display_works>ul',
-	  ITEM_SELECTOR: '.display_works>ul>li',
-	  AP_TARGER:     'display_works'
-	};
+	var ROOT_SELECTOR    = '._image-items';
+	var ITEM_SELECTOR    = '.image-item';
+	var AP_TARGER        = '_image-items';
 	var PAGERIZE_EVENTS = [
 	  'AutoPagerize_DOMNodeInserted',
 	  'AutoPatchWork.DOMNodeInserted',
@@ -111,18 +104,17 @@
 	  });
 	}
 
-	var preset = /^\/bookmark\.php/.test(location.pathname) ? BKMK : SEARCH;
 	var pagerizeStream = PAGERIZE_EVENTS.reduce(function(stream, eventType) {
 	  return stream.merge(Stream.fromEventTarget(document.body, eventType));
 	}, new Stream());
 
 	var workList = pagerizeStream
 	  .filter(function(event) {
-	    return event.target.classList.contains(preset.AP_TARGER);
+	    return event.target.classList.contains(AP_TARGER);
 	  })
 	  .scan([], function(nodeList, event) {
 	    var index = nodeList.length;
-	    var newNOdeList = $$(preset.ITEM_SELECTOR, event.target).map(function(el) {
+	    var newNOdeList = $$(ITEM_SELECTOR, event.target).map(function(el) {
 	      var bkmk = el.getElementsByClassName(BKMK_COUNT_CLASS)[0];
 
 	      el.count = +(bkmk && bkmk.textContent || 0);
@@ -145,14 +137,14 @@
 	    return workList;
 	  })
 	  .subscribe(function(data) {
-	    var roots = $$(preset.ROOT_SELECTOR);
+	    var roots = $$(ROOT_SELECTOR);
 
 	    data.forEach(function add(el, index) {
 	      roots[~~(index / 20)].appendChild(el);
 	    });
 	  });
 
-	workList.property($$(preset.ITEM_SELECTOR));
+	workList.property($$(ITEM_SELECTOR));
 
 	__webpack_require__(2)($$, pagerizeStream);
 
