@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Sort to popular order for pixiv
-// @version      0.2.1
+// @version      0.3.0
 // @description  Makes possible to sort the search result to popular order.
 // @author       8th713
 // @namespace    http://8th713.tumblr.com/
@@ -11,93 +11,75 @@
 // @license      MIT
 // ==/UserScript==
 
-require('./style.less');
-require('./replace-pi');
+import './style.less';
+import Kefir from 'kefir';
+import {
+  ACTIVE_CLASS,
+  $$,
+  insertButton,
+  createFragment,
+  getApStream
+} from 'utils';
 
-var Stream = require('stream');
+const MENU_ITEMS = '.column-order-menu > .menu-items';
+const IMAGE_ITEMS = '._image-items';
+const IMAGE_ITEM = '.autopagerize_page_element .image-item';
+const BKMK_COUNT_CLASS = 'bookmark-count';
 
-var BKMK_COUNT_CLASS = 'bookmark-count';
-var ROOT_SELECTOR    = '._image-items';
-var ITEM_SELECTOR    = '.image-item';
-var AP_TARGER        = '_image-items';
-var PAGERIZE_EVENTS = [
-  'AutoPagerize_DOMNodeInserted',
-  'AutoPatchWork.DOMNodeInserted',
-  'AutoPagerAfterInsert'
-];
+function createList() {
+  let count = 0;
+  const pool = Kefir.pool();
+  const list = pool
+    .map(el => {
+      const bkmk = el.getElementsByClassName(BKMK_COUNT_CLASS)[0];
+      const score = +(bkmk && bkmk.textContent || 0);
+      const index = count++;
 
-function $$(selector, ctx) {
-  var collection = (ctx || document).querySelectorAll(selector);
+      el.score = score;
+      el.index = index;
+      return el;
+    })
+    .scan((acc, el) => acc.concat(el), [])
+    .debounce(0);
 
-  return [].slice.call(collection);
+  list.add = (el) => {
+    pool.plug(Kefir.constant(el));
+  };
+
+  return list;
 }
 
-function createBtn(text) {
-  var container = document.createElement('ul');
-  var li = document.createElement('li');
-  var btn = document.createElement('a');
+function sortByPopular(list) {
+  return list.slice().sort((a, b) => {
+    const aScore = -a.score;
+    const bScore = -b.score;
 
-  btn.textContent = text;
-  btn.href = '';
-
-  li.appendChild(btn);
-  container.className = 'menu-items stp-el';
-  container.appendChild(li);
-  document.querySelector('.column-order-menu').appendChild(container);
-
-  return btn;
-}
-
-function sortByPopular(nodeList) {
-  return nodeList.slice().sort(function(a, b) {
-    var ac = -a.count;
-    var bc = -b.count;
-
-    if (ac !== bc) { return ac > bc ? 1 : -1; }
+    if (aScore !== bScore) {
+      return aScore > bScore ? 1 : -1;
+    }
     return a.index - b.index;
   });
 }
 
-var pagerizeStream = PAGERIZE_EVENTS.reduce(function(stream, eventType) {
-  return stream.merge(Stream.fromEventTarget(document.body, eventType));
-}, new Stream());
+const listStream = createList();
 
-var workList = pagerizeStream
-  .filter(function(event) {
-    return event.target.classList.contains(AP_TARGER);
+insertButton('人気順', MENU_ITEMS)
+  .map(event => {
+    return event.target.classList.contains(ACTIVE_CLASS);
   })
-  .scan([], function(nodeList, event) {
-    var index = nodeList.length;
-    var newNOdeList = $$(ITEM_SELECTOR, event.target).map(function(el) {
-      var bkmk = el.getElementsByClassName(BKMK_COUNT_CLASS)[0];
-
-      el.count = +(bkmk && bkmk.textContent || 0);
-      el.index = index++;
-      return el;
-    });
-
-    return nodeList.concat(newNOdeList);
-  });
-
-Stream.fromEventTarget(createBtn('人気順'), 'click')
-  .map(function(event) {
-    event.preventDefault();
-    return event.target.classList.toggle('current');
-  })
-  .combine(workList, function(enabled, workList) {
-    if (enabled) {
-      return sortByPopular(workList);
+  .combine(listStream, (sorted, list) => {
+    if (sorted) {
+      return sortByPopular(list);
     }
-    return workList;
+    return list.slice();
   })
-  .subscribe(function(data) {
-    var roots = $$(ROOT_SELECTOR);
-
-    data.forEach(function add(el, index) {
-      roots[~~(index / 20)].appendChild(el);
-    });
+  .map(createFragment)
+  .onValue(fragment => {
+    document.querySelector(IMAGE_ITEMS).appendChild(fragment);
   });
 
-workList.property($$(ITEM_SELECTOR));
+getApStream()
+  .map(event => event.target)
+  .onValue(listStream.add);
 
-require('./showcase')($$, pagerizeStream);
+$$(IMAGE_ITEM).forEach(listStream.add);
