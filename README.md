@@ -3,11 +3,8 @@ Extend pixiv
 
 Mini userscript for pixiv.
 
-## Status
-[![devDependency Status](https://david-dm.org/8th713/extend-pixiv/dev-status.svg?style=flat)](https://david-dm.org/8th713/extend-pixiv#info=devDependencies)
-
 ## Features and Usage
-visit [pages](http://8th713.github.io/extend-pixiv/).
+visit [pages](https://8th713.github.io/extend-pixiv/).
 
 ## Develop
 ``` sh
@@ -19,7 +16,7 @@ To watch and auto-build during development:
 npm start
 ```
 
-To build `gh-pages`:
+To build document:
 ``` sh
 npm build
 ```
